@@ -120,7 +120,7 @@ function Enable-DirectoryAuditing {
         # Define the auditing permissions (File Edit, Access, and Deletion)
         $rights = [System.Security.AccessControl.FileSystemRights]"Write, Delete, Read, ExecuteFile, ChangePermissions, TakeOwnership"
 
-        # Define correct Inheritance and Propagation flags
+        # Define correct Inheritance and Propagation flags to apply to this folder, subfolders, and files
         $inheritanceFlags = [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit"
         $propagationFlags = [System.Security.AccessControl.PropagationFlags]::None
         $auditFlags = [System.Security.AccessControl.AuditFlags]"Success, Failure"
@@ -137,9 +137,12 @@ function Enable-DirectoryAuditing {
         # Apply the updated ACL back to the directory
         Set-Acl -Path $DirectoryPath -AclObject $acl
 
-        # Verify if any audit rules exist after the change
-        $updatedAuditRules = Get-CurrentAuditing -DirectoryPath $DirectoryPath
-        if ($updatedAuditRules -match "No current auditing rules") {
+        # Validate by retrieving the updated ACL
+        $updatedAcl = Get-Acl -Path $DirectoryPath
+        $newRules = $updatedAcl.Audit | Where-Object { $_.IdentityReference -eq "Everyone" }
+        
+        # Check if the new rule was applied to all inheritance levels
+        if ($newRules.Count -eq 0) {
             throw "Failed to apply auditing rules for ${DirectoryPath}."
         }
 

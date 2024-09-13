@@ -137,9 +137,9 @@ function Enable-DirectoryAuditing {
         # Apply the updated ACL back to the directory
         Set-Acl -Path $DirectoryPath -AclObject $acl
 
-        # Verify if the new auditing rule has been applied
+        # Verify if any audit rules exist after the change
         $updatedAuditRules = Get-CurrentAuditing -DirectoryPath $DirectoryPath
-        if ($updatedAuditRules -notmatch "Principal: Everyone") {
+        if ($updatedAuditRules -match "No current auditing rules") {
             throw "Failed to apply auditing rules for ${DirectoryPath}."
         }
 

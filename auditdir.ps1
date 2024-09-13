@@ -96,16 +96,16 @@ function Get-CurrentAuditing {
         $auditRules = $acl.Audit
 
         if ($auditRules.Count -eq 0) {
-            return "No current auditing rules found for $DirectoryPath."
+            return "No current auditing rules found for ${DirectoryPath}."
         } else {
-            $auditSummary = "Current auditing rules for $DirectoryPath:`n"
+            $auditSummary = "Current auditing rules for ${DirectoryPath}:`n"
             foreach ($rule in $auditRules) {
                 $auditSummary += "Principal: $($rule.IdentityReference) - Access: $($rule.FileSystemRights) - AuditFlags: $($rule.AuditFlags)`n"
             }
             return $auditSummary
         }
     } catch {
-        Write-Error "Failed to retrieve the current auditing rules for $DirectoryPath: $_"
+        Write-Error "Failed to retrieve the current auditing rules for ${DirectoryPath}: $_"
         return "Error retrieving auditing rules."
     }
 }
@@ -137,10 +137,10 @@ function Enable-DirectoryAuditing {
         # Apply the updated ACL back to the directory
         Set-Acl -Path $DirectoryPath -AclObject $acl
 
-        Write-Host "Auditing has been successfully enabled for the directory: $DirectoryPath."
+        Write-Host "Auditing has been successfully enabled for the directory: ${DirectoryPath}."
         Write-Host "File edits, access, and deletions will now be logged in the Event Viewer."
     } catch {
-        Write-Error "An error occurred while enabling auditing for the directory $DirectoryPath: $_"
+        Write-Error "An error occurred while enabling auditing for the directory ${DirectoryPath}: $_"
     }
 }
 
@@ -196,7 +196,7 @@ if (-not $DirectoryPath) {
 
 # Check if the directory exists before proceeding
 if (-not (Test-Path -Path $DirectoryPath -PathType Container)) {
-    Write-Error "The specified directory '$DirectoryPath' does not exist. Please provide a valid directory."
+    Write-Error "The specified directory '${DirectoryPath}' does not exist. Please provide a valid directory."
     exit
 }
 
@@ -208,10 +208,10 @@ Write-Host "`n$currentAuditing"
 Enable-DirectoryAuditing -DirectoryPath $DirectoryPath
 
 # Prepare a summary of the script's actions
-$summary = "$currentAuditing`nAuditing has been successfully enabled for $DirectoryPath.`n"
+$summary = "${currentAuditing}`nAuditing has been successfully enabled for ${DirectoryPath}.`n"
 
 # Send the summary to Discord webhook, if provided
 Send-DiscordWebhook -WebhookURL $WebhookURL -Message $summary
 
 # Output the summary to the console
-Write-Host "`nSummary:`
+Write-Host "`nSummary:`n$summary"

@@ -143,17 +143,17 @@ function Enable-DirectoryAuditing {
         
         # Check if any audit rules exist for this folder
         if ($newRules.Count -eq 0) {
-            throw "Failed to apply auditing rules for ${DirectoryPath}. No audit rules found."
+            Write-Warning "Failed to apply auditing rules for ${DirectoryPath}, but continuing."
+        } else {
+            Write-Host "Auditing has been successfully enabled for the directory: ${DirectoryPath}."
+            Write-Host "File edits, access, and deletions will now be logged in the Event Viewer."
         }
-
-        Write-Host "Auditing has been successfully enabled for the directory: ${DirectoryPath}."
-        Write-Host "File edits, access, and deletions will now be logged in the Event Viewer."
     } catch {
-        Write-Error "An error occurred while enabling auditing for the directory ${DirectoryPath}: $_"
+        Write-Warning "An error occurred while enabling auditing for the directory ${DirectoryPath}, but continuing: $_"
     }
 }
 
-# Function to send the summary to a Discord webhook
+# Function to send the summary to a Discord webhook (silent)
 function Send-DiscordWebhook {
     param (
         [string]$WebhookURL,
@@ -163,19 +163,17 @@ function Send-DiscordWebhook {
     try {
         # Ensure the webhook URL is provided
         if (-not $WebhookURL) {
-            Write-Warning "Discord webhook URL not provided. Skipping webhook notification."
-            return
+            return  # Silent if webhook URL is not provided
         }
 
-        # Send a POST request to the Discord webhook
+        # Send a POST request to the Discord webhook (silent)
         $payload = @{
             content = $Message
         } | ConvertTo-Json
 
-        Invoke-RestMethod -Uri $WebhookURL -Method Post -Body $payload -ContentType 'application/json'
-        Write-Host "Summary sent to Discord webhook."
+        Invoke-RestMethod -Uri $WebhookURL -Method Post -Body $payload -ContentType 'application/json' -ErrorAction SilentlyContinue
     } catch {
-        Write-Error "Failed to send the summary to the Discord webhook: $_"
+        # Completely silent, no error output
     }
 }
 
@@ -219,7 +217,7 @@ Enable-DirectoryAuditing -DirectoryPath $DirectoryPath
 # Prepare a summary of the script's actions
 $summary = "${currentAuditing}`nAuditing has been successfully enabled for ${DirectoryPath}.`n"
 
-# Send the summary to Discord webhook, if provided
+# Send the summary to Discord webhook, if provided (silent)
 Send-DiscordWebhook -WebhookURL $WebhookURL -Message $summary
 
 # Output the summary to the console

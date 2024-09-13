@@ -98,9 +98,9 @@ function Get-CurrentAuditing {
         if ($auditRules.Count -eq 0) {
             return "No current auditing rules found for ${DirectoryPath}."
         } else {
-            $auditSummary = "Current auditing rules for ${DirectoryPath}:`n"
+            $auditSummary = "Current auditing rules for ${DirectoryPath}:" + "`n"
             foreach ($rule in $auditRules) {
-                $auditSummary += "Principal: $($rule.IdentityReference) - Access: $($rule.FileSystemRights) - AuditFlags: $($rule.AuditFlags)`n"
+                $auditSummary += "Principal: $($rule.IdentityReference) - Access: $($rule.FileSystemRights) - AuditFlags: $($rule.AuditFlags)" + "`n"
             }
             return $auditSummary
         }

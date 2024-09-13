@@ -120,13 +120,13 @@ function Enable-DirectoryAuditing {
         # Define the auditing permissions (File Edit, Access, and Deletion)
         $rights = [System.Security.AccessControl.FileSystemRights]"Write, Delete, Read, ExecuteFile, ChangePermissions, TakeOwnership"
 
-        # Define other attributes for the audit rule
-        $inherited = $false  # Set to false so the rule is applied directly, not inherited
-        $propagation = [System.Security.AccessControl.PropagationFlags]"None"  # No propagation needed
-        $auditFlags = [System.Security.AccessControl.AuditFlags]"Success, Failure"  # Log both successful and failed actions
+        # Define correct Inheritance and Propagation flags
+        $inheritanceFlags = [System.Security.AccessControl.InheritanceFlags]::None
+        $propagationFlags = [System.Security.AccessControl.PropagationFlags]::None
+        $auditFlags = [System.Security.AccessControl.AuditFlags]"Success, Failure"
 
         # Create a new FileSystemAuditRule for the directory
-        $rule = New-Object System.Security.AccessControl.FileSystemAuditRule("Everyone", $rights, $inherited, $propagation, $auditFlags)
+        $rule = New-Object System.Security.AccessControl.FileSystemAuditRule("Everyone", $rights, $inheritanceFlags, $propagationFlags, $auditFlags)
 
         # Get the current ACL (Access Control List) for the directory
         $acl = Get-Acl $DirectoryPath
@@ -136,6 +136,12 @@ function Enable-DirectoryAuditing {
 
         # Apply the updated ACL back to the directory
         Set-Acl -Path $DirectoryPath -AclObject $acl
+
+        # Verify if the new auditing rule has been applied
+        $updatedAuditRules = Get-CurrentAuditing -DirectoryPath $DirectoryPath
+        if ($updatedAuditRules -notmatch "Principal: Everyone") {
+            throw "Failed to apply auditing rules for ${DirectoryPath}."
+        }
 
         Write-Host "Auditing has been successfully enabled for the directory: ${DirectoryPath}."
         Write-Host "File edits, access, and deletions will now be logged in the Event Viewer."

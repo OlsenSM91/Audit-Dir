@@ -121,7 +121,7 @@ function Enable-DirectoryAuditing {
         $rights = [System.Security.AccessControl.FileSystemRights]"Write, Delete, Read, ExecuteFile, ChangePermissions, TakeOwnership"
 
         # Define correct Inheritance and Propagation flags
-        $inheritanceFlags = [System.Security.AccessControl.InheritanceFlags]::None
+        $inheritanceFlags = [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit"
         $propagationFlags = [System.Security.AccessControl.PropagationFlags]::None
         $auditFlags = [System.Security.AccessControl.AuditFlags]"Success, Failure"
 

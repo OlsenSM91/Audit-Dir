@@ -117,8 +117,8 @@ function Enable-DirectoryAuditing {
     )
 
     try {
-        # Define the auditing permissions (File Edit, Access, and Deletion)
-        $rights = [System.Security.AccessControl.FileSystemRights]"Write, Delete, Read, ExecuteFile, ChangePermissions, TakeOwnership"
+        # Define the auditing permissions (File Edit, Access, Deletion, and DeleteSubdirectoriesAndFiles)
+        $rights = [System.Security.AccessControl.FileSystemRights]"Write, Delete, Read, ExecuteFile, ChangePermissions, TakeOwnership, DeleteSubdirectoriesAndFiles"
 
         # Define correct Inheritance and Propagation flags to apply to this folder, subfolders, and files
         $inheritanceFlags = [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit"
@@ -141,9 +141,9 @@ function Enable-DirectoryAuditing {
         $updatedAcl = Get-Acl -Path $DirectoryPath
         $newRules = $updatedAcl.Audit | Where-Object { $_.IdentityReference -eq "Everyone" }
         
-        # Check if the new rule was applied to all inheritance levels
+        # Check if any audit rules exist for this folder
         if ($newRules.Count -eq 0) {
-            throw "Failed to apply auditing rules for ${DirectoryPath}."
+            throw "Failed to apply auditing rules for ${DirectoryPath}. No audit rules found."
         }
 
         Write-Host "Auditing has been successfully enabled for the directory: ${DirectoryPath}."
